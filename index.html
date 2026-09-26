@@ -557,9 +557,10 @@
 
   const defaultState = {
     workers: [
-      { id: crypto.randomUUID(), name: "Ali Khan", phone: "0300-0000000", bundleRate: 250, boriRate: 180, status: "Active" },
-      { id: crypto.randomUUID(), name: "Usman Shah", phone: "0312-0000000", bundleRate: 260, boriRate: 190, status: "Active" },
-      { id: crypto.randomUUID(), name: "Ahmed Raza", phone: "0345-0000000", bundleRate: 240, boriRate: 175, status: "Active" }
+      { id: crypto.randomUUID(), name: "Luqman Bhai", phone: "0300-1111111", bundleRate: 250, boriRate: 180, status: "Active" },
+      { id: crypto.randomUUID(), name: "Shayan Shah", phone: "0312-2222222", bundleRate: 260, boriRate: 190, status: "Active" },
+      { id: crypto.randomUUID(), name: "Kashif", phone: "0345-3333333", bundleRate: 240, boriRate: 175, status: "Active" },
+      { id: crypto.randomUUID(), name: "Umer Mama", phone: "0321-4444444", bundleRate: 270, boriRate: 200, status: "Active" }
     ],
     productions: [],
     payments: []
@@ -592,10 +593,17 @@
 
   function switchView(viewName) {
     document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
-    document.getElementById(viewName).classList.add("active");
+    const target = document.getElementById(viewName);
+    if (target) target.classList.add("active");
 
     document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
-    event.target.classList.add("active");
+    const btn = Array.from(document.querySelectorAll(".nav-btn")).find(b => b.textContent.trim() === {
+      dashboard: "Dashboard",
+      workers: "Workers",
+      entries: "Production",
+      payments: "Payments"
+    }[viewName]);
+    if (btn) btn.classList.add("active");
 
     if (viewName === "workers") renderAllWorkers();
     if (viewName === "entries") renderAllEntries();
@@ -1017,10 +1025,6 @@
         renderWorkerDetail();
       }
     }
-  });
-
-  document.getElementById("entryDate").addEventListener("change", function() {
-    document.getElementById("workerProdDate").value = this.value;
   });
 
   renderDashboard();
