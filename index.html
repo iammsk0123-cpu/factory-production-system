@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Factory Production & Labor Payment System</title>
+  <style>
+    :root {
+      --primary: #0f172a;
+      --secondary: #1e293b;
+      --accent: #0ea5e9;
+      --success: #16a34a;
+      --warning: #f59e0b;
+      --danger: #dc2626;
+      --light: #f8fafc;
+      --border: #dbe3ee;
+      --bg: #eef4ff;
+      --text: #0f172a;
+      --muted: #475569;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; font-family: Arial, sans-serif; background: var(--bg); color: var(--text); }
+    body { padding: 20px; }
+    h1, h2, h3 { margin: 0 0 12px; }
+    
+    .topbar {
+      background: var(--primary);
+      color: white;
+      padding: 18px 20px;
+      border-radius: 14px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .brand { font-size: 28px; font-weight: 700; }
+    .small-tag { font-size: 12px; opacity: 0.8; }
+    
+    .nav-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .nav-btn {
+      padding: 10px 16px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      transition: 0.2s ease;
+    }
+    .nav-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+    .nav-btn.active {
+      background: var(--success);
+    }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+    .card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 2px 8px rgba(15,23,42,0.04);
+    }
+    .card .label {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+    .card .value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    
+    .section {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(15,23,42,0.04);
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    
+    form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      align-items: end;
+    }
+    input, select, textarea, button {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 15px;
+      background: white;
+    }
+    textarea { min-height: 100px; resize: vertical; }
+    button {
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.2s ease;
+    }
+    .primary-btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+    }
+    .secondary-btn {
+      background: #e2e8f0;
+      color: var(--text);
+      border: none;
+    }
+    .success-btn {
+      background: var(--success);
+      color: white;
+      border: none;
+    }
+    .danger-btn {
+      background: var(--danger);
+      color: white;
+      border: none;
+    }
+    .warning-btn {
+      background: var(--warning);
+      color: white;
+      border: none;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+    th, td {
+      text-align: left;
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      font-size: 14px;
+    }
+    th {
+      background: #f1f5f9;
+      color: var(--secondary);
+      font-weight: 700;
+    }
+    
+    .status-pill {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .pending { background: #fef3c7; color: #92400e; }
+    .approved { background: #dcfce7; color: #166534; }
+    .rejected { background: #fee2e2; color: #991b1b; }
+    .active { background: #dcfce7; color: #166534; }
+    .inactive { background: #fee2e2; color: #991b1b; }
+    
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .mini-btn {
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: none;
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .muted { color: var(--muted); }
+
+    /* Worker Detail View */
+    .worker-detail-header {
+      background: var(--primary);
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    .worker-detail-header h2 {
+      margin: 0;
+      font-size: 24px;
+    }
+    .worker-detail-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+    .worker-stat {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      color: var(--text);
+    }
+    .worker-stat .label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+    .worker-stat .value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .back-btn {
+      padding: 10px 16px;
+      background: var(--secondary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    @media (max-width: 768px) {
+      body { padding: 12px; }
+      .card .value { font-size: 24px; }
+      th, td { font-size: 12px; padding: 10px 8px; }
+      .worker-detail-header { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div>
+      <div class="brand">Factory Production & Labor System</div>
+      <div class="small-tag">Manager · Supervisor · Worker</div>
+    </div>
+    <div class="nav-buttons">
+      <button class="nav-btn active" onclick="switchView('dashboard')">Dashboard</button>
+      <button class="nav-btn" onclick="switchView('workers')">Workers</button>
+      <button class="nav-btn" onclick="switchView('entries')">Production</button>
+      <button class="nav-btn" onclick="switchView('payments')">Payments</button>
+    </div>
+    <div class="small-tag">Currency: PKR</div>
+  </header>
+
+  <!-- DASHBOARD VIEW -->
+  <div id="dashboard" class="view active">
+    <section class="main-grid" id="dashboardCards">
+      <!-- Dashboard cards inserted dynamically -->
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>Add / Edit Worker</h2>
+      </div>
+      <form id="workerForm">
+        <input type="hidden" id="workerId" />
+        <div>
+          <label>Worker Name</label>
+          <input type="text" id="workerName" placeholder="e.g. Ali Khan" required />
+        </div>
+
+        <div>
+          <label>Phone</label>
+          <input type="text" id="workerPhone" placeholder="03xx-xxxxxxx" />
+        </div>
+
+        <div>
+          <label>Bundle Rate (PKR/Bundle)</label>
+          <input type="number" id="bundleRate" min="0" step="1" value="0" required />
+        </div>
+
+        <div>
+          <label>Bori Rate (PKR/Bori)</label>
+          <input type="number" id="boriRate" min="0" step="1" value="0" required />
+        </div>
+
+        <div>
+          <label>Status</label>
+          <select id="workerStatus">
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+
+        <div>
+          <button type="submit" class="primary-btn">Save Worker</button>
+        </div>
+
+        <div>
+          <button type="button" class="secondary-btn" id="resetWorkerForm">Reset</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>Workers Directory</h2>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Bundle Rate</th>
+            <th>Bori Rate</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="workerTableBody"></tbody>
+      </table>
+    </section>
+  </div>
+
+  <!-- WORKER DETAIL VIEW -->
+  <div id="workerDetail" class="view">
+    <div style="margin-bottom: 20px;">
+      <button class="back-btn" onclick="switchView('dashboard')">← Back to Dashboard</button>
+    </div>
+
+    <div class="worker-detail-header">
+      <div>
+        <h2 id="workerDetailName"></h2>
+        <p style="margin: 5px 0; opacity: 0.9;" id="workerDetailInfo"></p>
+      </div>
+      <div class="worker-detail-stats">
+        <div class="worker-stat">
+          <div class="label">Total Earned</div>
+          <div class="value" id="workerDetailEarned">PKR 0</div>
+        </div>
+        <div class="worker-stat">
+          <div class="label">Total Paid</div>
+          <div class="value" id="workerDetailPaid">PKR 0</div>
+        </div>
+        <div class="worker-stat">
+          <div class="label">Outstanding</div>
+          <div class="value" id="workerDetailOutstanding">PKR 0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Daily Production Entry for Worker -->
+    <section class="section">
+      <div class="section-header">
+        <h3>Add Daily Production</h3>
+      </div>
+      <form id="workerProductionForm">
+        <div>
+          <label>Date</label>
+          <input type="date" id="workerProdDate" required />
+        </div>
+
+        <div>
+          <label>Bundles</label>
+          <input type="number" id="workerProdBundles" min="0" step="1" value="0" required />
+        </div>
+
+        <div>
+          <label>Bori</label>
+          <input type="number" id="workerProdBori" min="0" step="1" value="0" required />
+        </div>
+
+        <div>
+          <label>Daily Salary (Auto-calculated)</label>
+          <input type="text" id="workerProdSalary" disabled placeholder="PKR 0" />
+        </div>
+
+        <div>
+          <label>Notes</label>
+          <textarea id="workerProdNotes" placeholder="Optional notes"></textarea>
+        </div>
+
+        <div>
+          <button type="submit" class="success-btn">Save Production Entry</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Daily Payment Entry for Worker -->
+    <section class="section">
+      <div class="section-header">
+        <h3>Record Payment Given</h3>
+      </div>
+      <form id="workerPaymentForm">
+        <div>
+          <label>Payment Date</label>
+          <input type="date" id="workerPaymentDate" required />
+        </div>
+
+        <div>
+          <label>Amount Given (PKR)</label>
+          <input type="number" id="workerPaymentAmount" min="0" step="1" value="0" required />
+        </div>
+
+        <div>
+          <label>Payment Method</label>
+          <select id="workerPaymentMethod">
+            <option value="Cash">Cash</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+            <option value="Cheque">Cheque</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Notes</label>
+          <textarea id="workerPaymentNotes" placeholder="Optional notes (e.g., advance, salary, etc.)"></textarea>
+        </div>
+
+        <div>
+          <button type="submit" class="primary-btn">Record Payment</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Daily Production History -->
+    <section class="section">
+      <div class="section-header">
+        <h3>Daily Production History</h3>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Bundles</th>
+            <th>Bori</th>
+            <th>Daily Salary</th>
+            <th>Notes</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="workerProductionTableBody"></tbody>
+      </table>
+    </section>
+
+    <!-- Payment History -->
+    <section class="section">
+      <div class="section-header">
+        <h3>Payment History</h3>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Method</th>
+            <th>Notes</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="workerPaymentTableBody"></tbody>
+      </table>
+    </section>
+  </div>
+
+  <!-- WORKERS VIEW -->
+  <div id="workers" class="view">
+    <section class="section">
+      <div class="section-header">
+        <h2>All Workers</h2>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Bundle Rate</th>
+            <th>Bori Rate</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="allWorkerTableBody"></tbody>
+      </table>
+    </section>
+  </div>
+
+  <!-- ENTRIES VIEW -->
+  <div id="entries" class="view">
+    <section class="section">
+      <div class="section-header">
+        <h2>All Production Entries</h2>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Worker</th>
+            <th>Date</th>
+            <th>Bundles</th>
+            <th>Bori</th>
+            <th>Daily Salary</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="allEntryTableBody"></tbody>
+      </table>
+    </section>
+  </div>
+
+  <!-- PAYMENTS VIEW -->
+  <div id="payments" class="view">
+    <section class="section">
+      <div class="section-header">
+        <h2>All Payments</h2>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Worker</th>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Method</th>
+            <th>Notes</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="allPaymentTableBody"></tbody>
+      </table>
+    </section>
+  </div>
+
+<script>
+  const STORAGE_KEY = "factoryLaborSystemV2";
+
+  const defaultState = {
+    workers: [
+      { id: crypto.randomUUID(), name: "Ali Khan", phone: "0300-0000000", bundleRate: 250, boriRate: 180, status: "Active" },
+      { id: crypto.randomUUID(), name: "Usman Shah", phone: "0312-0000000", bundleRate: 260, boriRate: 190, status: "Active" },
+      { id: crypto.randomUUID(), name: "Ahmed Raza", phone: "0345-0000000", bundleRate: 240, boriRate: 175, status: "Active" }
+    ],
+    productions: [],
+    payments: []
+  };
+
+  let state = loadState();
+  let currentWorkerId = null;
+
+  function loadState() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultState));
+      return JSON.parse(JSON.stringify(defaultState));
+    }
+    try {
+      return JSON.parse(saved);
+    } catch {
+      return JSON.parse(JSON.stringify(defaultState));
+    }
+  }
+
+  function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function formatPKR(value) {
+    const safe = Number(value) || 0;
+    return "PKR " + safe.toLocaleString("en-PK");
+  }
+
+  function switchView(viewName) {
+    document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+    document.getElementById(viewName).classList.add("active");
+
+    document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+    event.target.classList.add("active");
+
+    if (viewName === "workers") renderAllWorkers();
+    if (viewName === "entries") renderAllEntries();
+    if (viewName === "payments") renderAllPayments();
+    if (viewName === "dashboard") renderDashboard();
+  }
+
+  function getWorkerById(workerId) {
+    return state.workers.find(w => w.id === workerId);
+  }
+
+  function getWorkerProductions(workerId) {
+    return state.productions.filter(p => p.workerId === workerId).sort((a, b) => new Date(b.date) - new Date(a.date));
+  }
+
+  function getWorkerPayments(workerId) {
+    return state.payments.filter(p => p.workerId === workerId).sort((a, b) => new Date(b.date) - new Date(a.date));
+  }
+
+  function calculateWorkerEarned(workerId) {
+    const prods = getWorkerProductions(workerId);
+    return prods.reduce((sum, p) => {
+      const worker = getWorkerById(p.workerId);
+      return sum + (Number(p.bundles || 0) * Number(worker?.bundleRate || 0)) + (Number(p.bori || 0) * Number(worker?.boriRate || 0));
+    }, 0);
+  }
+
+  function calculateWorkerPaid(workerId) {
+    const pays = getWorkerPayments(workerId);
+    return pays.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+  }
+
+  function openWorkerDetail(workerId) {
+    currentWorkerId = workerId;
+    document.getElementById("workerDetail").classList.add("active");
+    document.getElementById("dashboard").classList.remove("active");
+    renderWorkerDetail();
+  }
+
+  function renderDashboard() {
+    const cards = document.getElementById("dashboardCards");
+    const totalWorkers = state.workers.length;
+    const activeWorkers = state.workers.filter(w => w.status === "Active").length;
+    const totalProductions = state.productions.length;
+    const totalPayments = state.payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+
+    cards.innerHTML = `
+      <div class="card">
+        <div class="label">Total Workers</div>
+        <div class="value">${totalWorkers}</div>
+      </div>
+      <div class="card">
+        <div class="label">Active Workers</div>
+        <div class="value">${activeWorkers}</div>
+      </div>
+      <div class="card">
+        <div class="label">Total Productions</div>
+        <div class="value">${totalProductions}</div>
+      </div>
+      <div class="card">
+        <div class="label">Total Paid to Workers</div>
+        <div class="value">${formatPKR(totalPayments)}</div>
+      </div>
+    `;
+
+    renderWorkers();
+  }
+
+  function renderWorkers() {
+    const tbody = document.getElementById("workerTableBody");
+    tbody.innerHTML = "";
+
+    state.workers.forEach(worker => {
+      const earned = calculateWorkerEarned(worker.id);
+      const paid = calculateWorkerPaid(worker.id);
+      const outstanding = earned - paid;
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${worker.name}</td>
+        <td>${worker.phone || "-"}</td>
+        <td>${formatPKR(worker.bundleRate || 0)}</td>
+        <td>${formatPKR(worker.boriRate || 0)}</td>
+        <td>
+          <span class="status-pill ${worker.status === "Active" ? "active" : "inactive"}">
+            ${worker.status}
+          </span>
+        </td>
+        <td>
+          <div class="actions">
+            <button class="mini-btn primary-btn" onclick="openWorkerDetail('${worker.id}')">Open</button>
+            <button class="mini-btn warning-btn" data-action="edit-worker" data-id="${worker.id}">Edit</button>
+            <button class="mini-btn secondary-btn" data-action="toggle-worker" data-id="${worker.id}">
+              ${worker.status === "Active" ? "Disable" : "Enable"}
+            </button>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderAllWorkers() {
+    const tbody = document.getElementById("allWorkerTableBody");
+    tbody.innerHTML = "";
+
+    state.workers.forEach(worker => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${worker.name}</td>
+        <td>${worker.phone || "-"}</td>
+        <td>${formatPKR(worker.bundleRate || 0)}</td>
+        <td>${formatPKR(worker.boriRate || 0)}</td>
+        <td>
+          <span class="status-pill ${worker.status === "Active" ? "active" : "inactive"}">
+            ${worker.status}
+          </span>
+        </td>
+        <td>
+          <div class="actions">
+            <button class="mini-btn primary-btn" onclick="openWorkerDetail('${worker.id}')">Open</button>
+            <button class="mini-btn warning-btn" data-action="edit-worker" data-id="${worker.id}">Edit</button>
+            <button class="mini-btn secondary-btn" data-action="toggle-worker" data-id="${worker.id}">
+              ${worker.status === "Active" ? "Disable" : "Enable"}
+            </button>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderWorkerDetail() {
+    const worker = getWorkerById(currentWorkerId);
+    if (!worker) return;
+
+    const earned = calculateWorkerEarned(worker.id);
+    const paid = calculateWorkerPaid(worker.id);
+    const outstanding = earned - paid;
+
+    document.getElementById("workerDetailName").textContent = worker.name;
+    document.getElementById("workerDetailInfo").textContent = `${worker.phone || "N/A"} • Bundle: ${formatPKR(worker.bundleRate)} • Bori: ${formatPKR(worker.boriRate)}`;
+    document.getElementById("workerDetailEarned").textContent = formatPKR(earned);
+    document.getElementById("workerDetailPaid").textContent = formatPKR(paid);
+    document.getElementById("workerDetailOutstanding").textContent = formatPKR(outstanding);
+
+    document.getElementById("workerProdDate").value = new Date().toISOString().slice(0, 10);
+    document.getElementById("workerPaymentDate").value = new Date().toISOString().slice(0, 10);
+
+    renderWorkerProductions();
+    renderWorkerPayments();
+  }
+
+  function renderWorkerProductions() {
+    const tbody = document.getElementById("workerProductionTableBody");
+    tbody.innerHTML = "";
+
+    const prods = getWorkerProductions(currentWorkerId);
+    const worker = getWorkerById(currentWorkerId);
+
+    prods.forEach(prod => {
+      const salary = (Number(prod.bundles || 0) * Number(worker?.bundleRate || 0)) + (Number(prod.bori || 0) * Number(worker?.boriRate || 0));
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${prod.date}</td>
+        <td>${prod.bundles}</td>
+        <td>${prod.bori}</td>
+        <td>${formatPKR(salary)}</td>
+        <td>${prod.notes || "-"}</td>
+        <td>
+          <div class="actions">
+            <button class="mini-btn warning-btn" data-action="edit-prod" data-id="${prod.id}">Edit</button>
+            <button class="mini-btn danger-btn" data-action="delete-prod" data-id="${prod.id}">Delete</button>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderWorkerPayments() {
+    const tbody = document.getElementById("workerPaymentTableBody");
+    tbody.innerHTML = "";
+
+    const pays = getWorkerPayments(currentWorkerId);
+
+    pays.forEach(pay => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${pay.date}</td>
+        <td>${formatPKR(pay.amount)}</td>
+        <td>${pay.method}</td>
+        <td>${pay.notes || "-"}</td>
+        <td>
+          <div class="actions">
+            <button class="mini-btn warning-btn" data-action="edit-pay" data-id="${pay.id}">Edit</button>
+            <button class="mini-btn danger-btn" data-action="delete-pay" data-id="${pay.id}">Delete</button>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderAllEntries() {
+    const tbody = document.getElementById("allEntryTableBody");
+    tbody.innerHTML = "";
+
+    const sorted = [...state.productions].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    sorted.forEach(prod => {
+      const worker = getWorkerById(prod.workerId);
+      const salary = (Number(prod.bundles || 0) * Number(worker?.bundleRate || 0)) + (Number(prod.bori || 0) * Number(worker?.boriRate || 0));
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${worker ? worker.name : "Unknown"}</td>
+        <td>${prod.date}</td>
+        <td>${prod.bundles}</td>
+        <td>${prod.bori}</td>
+        <td>${formatPKR(salary)}</td>
+        <td>
+          <div class="actions">
+            <button class="mini-btn primary-btn" onclick="openWorkerDetail('${prod.workerId}')">View Worker</button>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderAllPayments() {
+    const tbody = document.getElementById("allPaymentTableBody");
+    tbody.innerHTML = "";
+
+    const sorted = [...state.payments].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    sorted.forEach(pay => {
+      const worker = getWorkerById(pay.workerId);
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${worker ? worker.name : "Unknown"}</td>
+        <td>${pay.date}</td>
+        <td>${formatPKR(pay.amount)}</td>
+        <td>${pay.method}</td>
+        <td>${pay.notes || "-"}</td>
+        <td>
+          <div class="actions">
+            <button class="mini-btn primary-btn" onclick="openWorkerDetail('${pay.workerId}')">View Worker</button>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  document.getElementById("workerForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const id = document.getElementById("workerId").value;
+    const name = document.getElementById("workerName").value.trim();
+    const phone = document.getElementById("workerPhone").value.trim();
+    const bundleRate = Number(document.getElementById("bundleRate").value || 0);
+    const boriRate = Number(document.getElementById("boriRate").value || 0);
+    const status = document.getElementById("workerStatus").value;
+
+    if (!name) {
+      alert("Worker name is required.");
+      return;
+    }
+
+    if (id) {
+      const worker = state.workers.find(w => w.id === id);
+      if (worker) {
+        worker.name = name;
+        worker.phone = phone;
+        worker.bundleRate = bundleRate;
+        worker.boriRate = boriRate;
+        worker.status = status;
+      }
+    } else {
+      state.workers.push({
+        id: crypto.randomUUID(),
+        name,
+        phone,
+        bundleRate,
+        boriRate,
+        status
+      });
+    }
+
+    saveState();
+    renderDashboard();
+    document.getElementById("workerForm").reset();
+    document.getElementById("workerId").value = "";
+  });
+
+  document.getElementById("workerProductionForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const date = document.getElementById("workerProdDate").value;
+    const bundles = Number(document.getElementById("workerProdBundles").value || 0);
+    const bori = Number(document.getElementById("workerProdBori").value || 0);
+    const notes = document.getElementById("workerProdNotes").value.trim();
+
+    if (!date || !currentWorkerId) {
+      alert("Date is required.");
+      return;
+    }
+
+    state.productions.push({
+      id: crypto.randomUUID(),
+      workerId: currentWorkerId,
+      date,
+      bundles,
+      bori,
+      notes
+    });
+
+    saveState();
+    renderWorkerDetail();
+    document.getElementById("workerProductionForm").reset();
+    document.getElementById("workerProdDate").value = new Date().toISOString().slice(0, 10);
+  });
+
+  document.getElementById("workerPaymentForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const date = document.getElementById("workerPaymentDate").value;
+    const amount = Number(document.getElementById("workerPaymentAmount").value || 0);
+    const method = document.getElementById("workerPaymentMethod").value;
+    const notes = document.getElementById("workerPaymentNotes").value.trim();
+
+    if (!date || amount <= 0 || !currentWorkerId) {
+      alert("Please fill all required fields.");
+      return;
+    }
+
+    state.payments.push({
+      id: crypto.randomUUID(),
+      workerId: currentWorkerId,
+      date,
+      amount,
+      method,
+      notes
+    });
+
+    saveState();
+    renderWorkerDetail();
+    document.getElementById("workerPaymentForm").reset();
+    document.getElementById("workerPaymentDate").value = new Date().toISOString().slice(0, 10);
+  });
+
+  document.getElementById("workerProdBundles").addEventListener("input", function() {
+    const worker = getWorkerById(currentWorkerId);
+    const bundles = Number(this.value || 0);
+    const bori = Number(document.getElementById("workerProdBori").value || 0);
+    const salary = (bundles * Number(worker?.bundleRate || 0)) + (bori * Number(worker?.boriRate || 0));
+    document.getElementById("workerProdSalary").value = formatPKR(salary);
+  });
+
+  document.getElementById("workerProdBori").addEventListener("input", function() {
+    const worker = getWorkerById(currentWorkerId);
+    const bundles = Number(document.getElementById("workerProdBundles").value || 0);
+    const bori = Number(this.value || 0);
+    const salary = (bundles * Number(worker?.bundleRate || 0)) + (bori * Number(worker?.boriRate || 0));
+    document.getElementById("workerProdSalary").value = formatPKR(salary);
+  });
+
+  document.getElementById("resetWorkerForm").addEventListener("click", function() {
+    document.getElementById("workerForm").reset();
+    document.getElementById("workerId").value = "";
+    document.getElementById("bundleRate").value = 0;
+    document.getElementById("boriRate").value = 0;
+    document.getElementById("workerStatus").value = "Active";
+  });
+
+  document.addEventListener("click", function(e) {
+    const action = e.target.dataset.action;
+    const id = e.target.dataset.id;
+
+    if (!action || !id) return;
+
+    if (action === "edit-worker") {
+      const worker = state.workers.find(w => w.id === id);
+      if (worker) {
+        document.getElementById("workerId").value = worker.id;
+        document.getElementById("workerName").value = worker.name;
+        document.getElementById("workerPhone").value = worker.phone || "";
+        document.getElementById("bundleRate").value = worker.bundleRate || 0;
+        document.getElementById("boriRate").value = worker.boriRate || 0;
+        document.getElementById("workerStatus").value = worker.status || "Active";
+      }
+    }
+
+    if (action === "toggle-worker") {
+      const worker = state.workers.find(w => w.id === id);
+      if (worker) {
+        worker.status = worker.status === "Active" ? "Inactive" : "Active";
+        saveState();
+        renderDashboard();
+        renderAllWorkers();
+      }
+    }
+
+    if (action === "delete-prod") {
+      if (confirm("Delete this production entry?")) {
+        state.productions = state.productions.filter(p => p.id !== id);
+        saveState();
+        renderWorkerDetail();
+      }
+    }
+
+    if (action === "delete-pay") {
+      if (confirm("Delete this payment record?")) {
+        state.payments = state.payments.filter(p => p.id !== id);
+        saveState();
+        renderWorkerDetail();
+      }
+    }
+  });
+
+  document.getElementById("entryDate").addEventListener("change", function() {
+    document.getElementById("workerProdDate").value = this.value;
+  });
+
+  renderDashboard();
+</script>
+</body>
+</html>
